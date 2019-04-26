@@ -235,14 +235,14 @@ def label_pic(img_path,trans_data):
             # font = cv2.FONT_HERSHEY_SIMPLEX
             display_data = ''
             if len(text) * text_height_self > right_bottom_x - left_top_x:                      #拆分文本
-                line_data_cnt = (right_bottom_x - left_top_x) // int((text_height_self / 2.4))
+                line_data_cnt = (right_bottom_x - left_top_x) // int((text_height_self / 3.3))
                 for i in range(0,len(text),line_data_cnt):
                     display_data += (text[i:i+line_data_cnt] + '\n')
             else:
                 display_data = text
             for i,txt in enumerate(display_data.split('\n')):                               #插入文本
                 y = left_top_y + i * text_height_self                           #插入文本所在高度
-                img = cv2ImgAddText(img, txt, left_top_x, y, (0, 0, 0), int(text_height_self / 1.2))
+                img = cv2ImgAddText(img, txt, left_top_x, y, (0, 0, 0), int(text_height_self / 2))
             #     # cv2.putText(img, txt, (left_top_x, y), font, 0.8, (0, 0, 0), 1)
     # cv2.imwrite('test_001.jpg',img)
     return img
@@ -258,73 +258,7 @@ def translate_pic(img_path,trans_data):
         fpic.write(img)
     img = cv2.imread('translate_temp.jpg',cv2.IMREAD_COLOR)
     return img
-    # # 图片信息
-    # img = cv2.imread(img_path)
-    #
-    # # 图片旋转操作
-    # img_angle = 0
-    # # 图片方向,1-逆时针旋转90度，2-逆时针旋转180度，3-逆时针旋转270度
-    # pic_direction = trans_data['direction']
-    # if pic_direction == 1:
-    #     img_angle = 90
-    #     img = rotate_image(img, img_angle)
-    # elif pic_direction == 2:
-    #     img_angle = 180
-    #     img = rotate_image(img, img_angle)
-    # elif pic_direction == 3:
-    #     img_angle = 270
-    #     img = rotate_image(img, img_angle)
-    # else:
-    #     pass
-    #
-    # # 提取OCR转换后结果数据集，包含识别结果，识别内容所在区域坐标
-    # result_data = trans_data['result']
-    # content = []  # 识别内容
-    # frame = []  # 识别内容所在区域
-    # text_height = []  # 字高度
-    # for data in result_data:
-    #     content.append(data['trans_content'])
-    #     frame.append(data['frame'])
-    #     text_height.append(data['text_height'])
-    # # print 'direction : ' + str(pic_direction)
-    # # print 'content : ' + str(len(content))
-    # # print 'frame : ' + str(len(frame))
-    # # print response.read()
-    #
-    # # 批量画标注矩形框bounding box
-    # if len(content) == 0 | len(frame) == 0:
-    #     pass
-    # else:
-    #     for i in range(len(frame)):  # 获取bbox的位置，左上角&右下角
-    #         left_top_x = int(frame[i][0].split(',')[0])
-    #         left_top_y = int(frame[i][0].split(',')[1])
-    #         right_bottom_x = int(frame[i][2].split(',')[0])
-    #         right_bottom_y = int(frame[i][2].split(',')[1])
-    #         # 画标注矩形框bounding box
-    #         cv2.rectangle(img, (left_top_x, left_top_y),
-    #                       (right_bottom_x, right_bottom_y),
-    #                       (255, 255, 255), -1)  # 白色bbox
-    #         # # 标注文本
-    #         font = cv2.FONT_HERSHEY_SIMPLEX
-    #         text = content[i]
-    #         text_height_self = int(text_height[i] / 2.5)  # 识别结果字的高度
-    #         display_data = ''
-    #         if len(text) * text_height_self > right_bottom_x - left_top_x:
-    #             line_data_cnt = (right_bottom_x - left_top_x) // text_height_self
-    #             for i in range(0, len(text), line_data_cnt):
-    #                 display_data += (text[i:i + line_data_cnt] + '\n')
-    #         else:
-    #             display_data = text
-    #         for i, txt in enumerate(display_data.split('\n')):
-    #             y = 25 + left_top_y + i * text_height_self
-    #             # cv2.putText(img, txt, (left_top_x, y), font, 0.8, (0, 0, 0), 1)
-    #             cv2ImgAddText(img, txt, left_top_x, left_top_y, (255, 255, 0),100)
-    # # =================================================BEGIN=============================================================
-    # # cv2.imwrite('temp_label.png', img)
-    # # with Image('temp_label.png') as img:
-    # # =================================================BEGIN=============================================================
-    # # cv2.imwrite('test_001.jpg',img)
-    # return img
+
 
 #function : 将原图、识别内容图、翻译结果图合并成一张图
 #input : image_path,图片路径
@@ -368,22 +302,21 @@ def trans_image(image_path,save_path):
 #output : None
 def pic_file_recursive(path,save_path):
     #重新组织路径
-    # spam = path.split(os.path.sep)
-    # l = ''
-    # for i in spam:
-    #     l = os.path.join(l,i)
-    # spam = l
+    cnt_success = 0  # 成功计数
+    cnt_fail = 0  # 失败计数
     for folderName, subfolders, filenames in os.walk(path):
         for filename in filenames:
             if filename.endswith('jpg') | filename.endswith('png'):
                 img_path = os.path.join(folderName,filename)
                 try:
                     trans_image(img_path,save_path)
+                    cnt_success += 1
                     print img_path + ' Success.'
                 except IOError:
                     print img_path + ' Fail.'
+                    cnt_fail += 1
                     continue
-    return 'Done.'
+    return 'Total %d. %d Success, %d Fail' % (cnt_success + cnt_fail, cnt_success, cnt_fail)
 
 
 
